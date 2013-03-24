@@ -1,7 +1,7 @@
 var net = require('net');
 
 var host = '192.168.1.144';
-var port = 8080;
+var port = 30002;
 
 var client = net.connect({host: host, port: port}, function() { //'connect' listener
 	console.log('client connected');
