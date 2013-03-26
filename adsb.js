@@ -171,7 +171,7 @@ function decodePacket(data){
 	// Message type is first 5 bits, always present
 	// http://www.radartutorial.eu/13.ssr/sr24.en.html
 	msg.type = bytes[0] >> 3;
-	console.log('Type: '+msg.type+': '+messageTypeToString(msg.type));
+	console.log('Type '+msg.type+': '+messageTypeToString(msg.type));
 
 	switch (msg.type){
 		case 16:
@@ -202,7 +202,7 @@ function decodePacket(data){
 
 	// Responder capabilities, always present
 	msg.ca = bytes[0] & 7; // Last 3 bits of the first byte
-	console.log('CA: '+msg.ca);
+	console.log('CA '+msg.ca+': '+responderCapabilitiesToString(msg.ca));
 
 	// ICAO address, always present
 	// http://www.radartutorial.eu/13.ssr/sr82.en.html ???
@@ -213,7 +213,7 @@ function decodePacket(data){
 	// DF 17 type (assuming this is a DF17, otherwise not used)
 	msg.metype = bytes[4] >> 3; // First 5 bits of byte 5
 	msg.mesub = bytes[4] & 7; // Last 3 bits of byte 5
-	console.log('Extended Squitter Type: '+msg.metype+', Subtype: '+msg.mesub+', '+meTypeToString(msg.metype, msg.mesub));
+	console.log('Extended Squitter Type: '+msg.metype+', Subtype: '+msg.mesub+': '+meTypeToString(msg.metype, msg.mesub));
 
 	// Fields for DF4, 5, 20, 21
 	msg.fs = bytes[0] & 7;
@@ -306,6 +306,38 @@ function messageTypeToString(type){
 
 		default:
 			return "Unknown";
+	}
+}
+
+// Convert responder capabilities
+function responderCapabilitiesToString(ca){
+	switch (ca){
+		case 0:
+			return "Level 1 (Surveillance Only)";
+
+		case 1:
+			return "Level 2 (DF0,4,5,11)";
+
+		case 2:
+			return "Level 3 (DF0,4,5,11,20,21)";
+
+		case 3:
+			return "Level 4 (DF0,4,5,11,20,21,24)";
+
+		case 4:
+			return "Level 2+3+4 (DF0,4,5,11,20,21,24,code7 - is on ground)";
+
+		case 5:
+			return "Level 2+3+4 (DF0,4,5,11,20,21,24,code7 - is on airborne)";
+
+		case 6:
+			return "Level 2+3+4 (DF0,4,5,11,20,21,24,code7)";
+
+		case 7:
+			return "Level 7 ???";
+
+		default:
+			return "Unknown CA";
 	}
 }
 
