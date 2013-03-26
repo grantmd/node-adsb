@@ -185,11 +185,10 @@ function decodePacket(data){
 			msg.bits = MODES_SHORT_MSG_BITS;
 			break;
 	}
-	console.log('Bits: '+msg.bits);
 
 	// CRC is always the last three bytes
 	var num_bytes = msg.bits / 8;
-	console.log('Bytes: '+num_bytes);
+	console.log('Bits: '+msg.bits+', Bytes: '+num_bytes);
 	msg.crc = (bytes[num_bytes - 3] << 16) | (bytes[num_bytes - 2] << 8) | bytes[num_bytes - 1];
 
 	// Calculate our own and compare it
@@ -197,7 +196,7 @@ function decodePacket(data){
 	msg.crc_ok = (msg.crc == crc2);
 	if (!msg.crc_ok){
 		stats.crc_errors++;
-		console.log('CRC check failed: '+msg.crc+' vs '+crc2);
+		console.log('!!!!!!!!!!!!!!! CRC check failed: '+msg.crc+' vs '+crc2);
 	}
 
 	// Responder capabilities, always present
