@@ -79,7 +79,7 @@ function decodePacket(data){
 		return;
 	}
 
-	if (len-2 > MODES_LONG_MSG_BITS / 8){
+	if (len-2 > MODES_LONG_MSG_BITS / 4){
 		console.log('Packet too long');
 		return;
 	}
