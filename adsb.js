@@ -213,7 +213,7 @@ function decodePacket(data){
 	// DF 17 type (assuming this is a DF17, otherwise not used)
 	msg.metype = bytes[4] >> 3; // First 5 bits of byte 5
 	msg.mesub = bytes[4] & 7; // Last 3 bits of byte 5
-	console.log('Type: '+msg.metype+', Subtype: '+msg.mesub);
+	console.log('Type: '+msg.metype+': '+messageTypeToString(msg.metype)+', Subtype: '+msg.mesub);
 
 	// Fields for DF4, 5, 20, 21
 	msg.fs = bytes[0] & 7;
@@ -282,4 +282,28 @@ function modesChecksum(bytes, num_bits){
 	}
 
 	return crc;
+}
+
+function messageTypeToString(type){
+	switch (type){
+		case 0:
+			return 'Short Air-Air Surveillance';
+
+		case 4:
+		case 20:
+			return ((type == 4) ? "Surveillance" : "Comm-B")+", Altitude Reply";
+
+		case 5:
+		case 21:
+			return ((type == 5) ? "Surveillance" : "Comm-B")+", Identity Reply";
+
+		case 11:
+			return "All Call Reply";
+
+		case 17:
+			return "ADS-B message";
+
+		default:
+			return "Unknown";
+	}
 }
