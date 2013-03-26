@@ -213,7 +213,7 @@ function decodePacket(data){
 	// DF 17 type (assuming this is a DF17, otherwise not used)
 	msg.metype = bytes[4] >> 3; // First 5 bits of byte 5
 	msg.mesub = bytes[4] & 7; // Last 3 bits of byte 5
-	console.log('Type: '+msg.metype+', Subtype: '+msg.mesub);
+	console.log('Extended Squitter Type: '+msg.metype+', Subtype: '+msg.mesub+', '+meTypeToString(msg.metype, msg.mesub));
 
 	// Fields for DF4, 5, 20, 21
 	msg.fs = bytes[0] & 7;
@@ -307,4 +307,45 @@ function messageTypeToString(type){
 		default:
 			return "Unknown";
 	}
+}
+
+// Convert extended squitter type and subtype to string
+function meTypeToString(metype, mesub){
+	var mename = "Unknown";
+
+	if (metype >= 1 && metype <= 4){
+		mename = "Aircraft Identification and Category";
+	}
+	else if (metype >= 5 && metype <= 8){
+		mename = "Surface Position";
+	}
+	else if (metype >= 9 && metype <= 18){
+		mename = "Airborne Position (Baro Altitude)";
+	}
+	else if (metype == 19 && mesub >=1 && mesub <= 4){
+		mename = "Airborne Velocity";
+	}
+	else if (metype >= 20 && metype <= 22){
+		mename = "Airborne Position (GNSS Height)";
+	}
+	else if (metype == 23 && mesub === 0){
+		mename = "Test Message";
+	}
+	else if (metype == 24 && mesub == 1){
+		mename = "Surface System Status";
+	}
+	else if (metype == 28 && mesub == 1){
+		mename = "Extended Squitter Aircraft Status (Emergency)";
+	}
+	else if (metype == 28 && mesub == 2){
+		mename = "Extended Squitter Aircraft Status (1090ES TCAS RA)";
+	}
+	else if (metype == 29 && (mesub === 0 || mesub == 1)){
+		mename = "Target State and Status Message";
+	}
+	else if (metype == 31 && (mesub === 0 || mesub == 1)){
+		mename = "Aircraft Operational Status Message";
+	}
+
+	return mename;
 }
