@@ -222,6 +222,7 @@ function decodePacket(data){
 	console.log('Flight Status '+msg.fs+': '+flightStatusToString(msg.fs));
 
 	// Return our message hash
+	console.log('');
 	return msg;
 }
 
