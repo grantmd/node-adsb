@@ -50,6 +50,7 @@ if (filename){
 		}
 
 		// All done, output stats
+		console.log('------------');
 		console.log('Total packets: '+stats.packets);
 		console.log('Invalid packets: '+stats.invalid_packets);
 		console.log('CRC Errors: '+stats.crc_errors);
@@ -73,6 +74,7 @@ else{
 		console.log('client disconnected');
 
 		// All done, output stats
+		console.log('------------');
 		console.log('Total packets: '+stats.packets);
 		console.log('Invalid packets: '+stats.invalid_packets);
 		console.log('CRC Errors: '+stats.crc_errors);
@@ -88,6 +90,7 @@ else{
 function decodePacket(data){
 	stats.packets++;
 	var len = data.length;
+	if (len > 16) return; // Temporary
 
 	console.log('Packet ('+len+'): '+data);
 
@@ -168,7 +171,7 @@ function decodePacket(data){
 	// Message type is first 5 bits, always present
 	// http://www.radartutorial.eu/13.ssr/sr24.en.html
 	msg.type = bytes[0] >> 3;
-	//console.log('Type: '+msg.type);
+	console.log('Type: '+msg.type);
 
 	switch (msg.type){
 		case 16:
@@ -182,9 +185,11 @@ function decodePacket(data){
 			msg.bits = MODES_SHORT_MSG_BITS;
 			break;
 	}
+	console.log('Bits: '+msg.bits);
 
 	// CRC is always the last three bytes
 	var num_bytes = msg.bits / 8;
+	console.log('Bytes: '+num_bytes);
 	msg.crc = (bytes[num_bytes - 3] << 16) | (bytes[num_bytes - 2] << 8) | bytes[num_bytes - 1];
 
 	// Calculate our own and compare it
@@ -197,7 +202,7 @@ function decodePacket(data){
 
 	// Responder capabilities, always present
 	msg.ca = bytes[0] & 7; // Last 3 bits of the first byte
-	//console.log('CA: '+msg.ca);
+	console.log('CA: '+msg.ca);
 
 	// ICAO address, always present
 	// http://www.radartutorial.eu/13.ssr/sr82.en.html ???
@@ -208,11 +213,13 @@ function decodePacket(data){
 	// DF 17 type (assuming this is a DF17, otherwise not used)
 	msg.metype = bytes[4] >> 3; // First 5 bits of byte 5
 	msg.mesub = bytes[4] & 7; // Last 3 bits of byte 5
+	console.log('Type: '+msg.metype+', Subtype: '+msg.mesub);
 
 	// Fields for DF4, 5, 20, 21
 	msg.fs = bytes[0] & 7;
 	msg.dr = bytes[1] >> 3 & 31;
 	msg.um = ((bytes[1] & 7) << 3) | bytes[2] >> 5;
+	console.log('Flight Status: '+msg.fs);
 
 	// Return our message hash
 	return msg;
