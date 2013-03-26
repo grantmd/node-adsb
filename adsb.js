@@ -284,6 +284,7 @@ function modesChecksum(bytes, num_bits){
 	return crc;
 }
 
+// Convert downlink format (DF) # to string
 function messageTypeToString(type){
 	switch (type){
 		case 0:
