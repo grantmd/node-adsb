@@ -31,15 +31,28 @@ process.argv.forEach(function(val, index, array){
 var MODES_LONG_MSG_BITS = 112;
 var MODES_SHORT_MSG_BITS = 56;
 
+var stats = {
+	packets: 0,
+	invalid_packets: 0,
+	crc_errors: 0
+};
+
 // What we do depends on whether we have a file defined or not
 if (filename){
 	// Open the file and start parsing it
 	fs.readFile(filename, function(err, data){
 		if (err) throw err;
+
+		// Split lines and process them one at a time
 		var packets = data.toString().trim().split("\n");
 		for (var i in packets){
 			decodePacket(packets[i]);
 		}
+
+		// All done, output stats
+		console.log('Total packets: '+stats.packets);
+		console.log('Invalid packets: '+stats.invalid_packets);
+		console.log('CRC Errors: '+stats.crc_errors);
 	});
 }
 else{
@@ -58,28 +71,41 @@ else{
 
 	client.on('end', function(){
 		console.log('client disconnected');
+
+		// All done, output stats
+		console.log('Total packets: '+stats.packets);
+		console.log('Invalid packets: '+stats.invalid_packets);
+		console.log('CRC Errors: '+stats.crc_errors);
+	});
+
+	client.on('error', function(){
+		console.log('connection error');
 	});
 }
 
 // Takes a string and decodes it, testing validity
 // Returns a hash describing the packet
 function decodePacket(data){
+	stats.packets++;
 	var len = data.length;
 
 	console.log('Packet ('+len+'): '+data);
 
 	// Test validity
 	if (data[0] != '*' || data[len-1] != ';'){
+		stats.invalid_packets++;
 		console.log('Invalid packet');
 		return;
 	}
 
 	if (len < 2){
+		stats.invalid_packets++;
 		console.log('Packet too short');
 		return;
 	}
 
 	if (len-2 > MODES_LONG_MSG_BITS / 4){
+		stats.invalid_packets++;
 		console.log('Packet too long');
 		return;
 	}
@@ -161,9 +187,13 @@ function decodePacket(data){
 	var num_bytes = msg.bits / 8;
 	msg.crc = (bytes[num_bytes - 3] << 16) | (bytes[num_bytes - 2] << 8) | bytes[num_bytes - 1];
 
+	// Calculate our own and compare it
 	var crc2 = modesChecksum(bytes, msg.bits);
 	msg.crc_ok = (msg.crc == crc2);
-	if (!msg.crc_ok) console.log('CRC check failed: '+msg.crc+' vs '+crc2);
+	if (!msg.crc_ok){
+		stats.crc_errors++;
+		console.log('CRC check failed: '+msg.crc+' vs '+crc2);
+	}
 
 	// Responder capabilities, always present
 	msg.ca = bytes[0] & 7; // Last 3 bits of the first byte
