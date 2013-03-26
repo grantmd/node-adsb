@@ -213,13 +213,13 @@ function decodePacket(data){
 	// DF 17 type (assuming this is a DF17, otherwise not used)
 	msg.metype = bytes[4] >> 3; // First 5 bits of byte 5
 	msg.mesub = bytes[4] & 7; // Last 3 bits of byte 5
-	console.log('Extended Squitter Type: '+msg.metype+', Subtype: '+msg.mesub+': '+meTypeToString(msg.metype, msg.mesub));
+	console.log('Extended Squitter Type '+msg.metype+', Subtype: '+msg.mesub+': '+meTypeToString(msg.metype, msg.mesub));
 
 	// Fields for DF4, 5, 20, 21
 	msg.fs = bytes[0] & 7;
 	msg.dr = bytes[1] >> 3 & 31;
 	msg.um = ((bytes[1] & 7) << 3) | bytes[2] >> 5;
-	console.log('Flight Status: '+msg.fs);
+	console.log('Flight Status '+msg.fs+': '+flightStatusToString(msg.fs));
 
 	// Return our message hash
 	return msg;
@@ -305,7 +305,7 @@ function messageTypeToString(type){
 			return "ADS-B message";
 
 		default:
-			return "Unknown";
+			return "Unknown type: "+type;
 	}
 }
 
@@ -337,7 +337,7 @@ function responderCapabilitiesToString(ca){
 			return "Level 7 ???";
 
 		default:
-			return "Unknown CA";
+			return "Unknown CA: "+ca;
 	}
 }
 
@@ -380,4 +380,30 @@ function meTypeToString(metype, mesub){
 	}
 
 	return mename;
+}
+
+// Convert flight status
+function flightStatusToString(fs){
+	switch (fs){
+		case 0:
+			return "Normal, Airborne";
+
+		case 1:
+			return "Normal, On the ground";
+
+		case 2:
+			return "ALERT, Airborne";
+
+		case 3:
+			return "ALERT, On the ground";
+
+		case 4:
+			return "ALERT & Special Position Identification. Airborne or Ground";
+
+		case 5:
+			return "Special Position Identification. Airborne or Ground";
+
+		default:
+			return "Unknown flight status: "+fs;
+	}
 }
