@@ -171,7 +171,7 @@ function decodePacket(data){
 	// Message type is first 5 bits, always present
 	// http://www.radartutorial.eu/13.ssr/sr24.en.html
 	msg.type = bytes[0] >> 3;
-	console.log('Type: '+msg.type);
+	console.log('Type: '+msg.type+': '+messageTypeToString(msg.type));
 
 	switch (msg.type){
 		case 16:
@@ -213,7 +213,7 @@ function decodePacket(data){
 	// DF 17 type (assuming this is a DF17, otherwise not used)
 	msg.metype = bytes[4] >> 3; // First 5 bits of byte 5
 	msg.mesub = bytes[4] & 7; // Last 3 bits of byte 5
-	console.log('Type: '+msg.metype+': '+messageTypeToString(msg.metype)+', Subtype: '+msg.mesub);
+	console.log('Type: '+msg.metype+', Subtype: '+msg.mesub);
 
 	// Fields for DF4, 5, 20, 21
 	msg.fs = bytes[0] & 7;
