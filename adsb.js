@@ -1,31 +1,65 @@
 // Portions from: https://github.com/antirez/dump1090/blob/master/dump1090.c
 
 var net = require('net');
+var fs = require('fs');
 
 // Config
 var host = '192.168.1.144';
 var port = 30002;
+var filename = null;
+
+// Procss command-line args
+process.argv.forEach(function(val, index, array){
+	if (index < 2) return;
+
+	switch (val){
+		case '-h':
+			host = process.argv[index+1];
+			break;
+		case '-p':
+			port = process.argv[index+1];
+			break;
+		case '-f':
+			filename = process.argv[index+1];
+			break;
+		default:
+			break;
+	}
+});
 
 // Constants
 var MODES_LONG_MSG_BITS = 112;
 var MODES_SHORT_MSG_BITS = 56;
 
-// Connect to our datasource and start processing incoming data
-var client = net.connect({host: host, port: port}, function(){
-	console.log('client connected');
-});
+// What we do depends on whether we have a file defined or not
+if (filename){
+	// Open the file and start parsing it
+	fs.readFile(filename, function(err, data){
+		if (err) throw err;
+		var packets = data.toString().trim().split("\n");
+		for (var i in packets){
+			decodePacket(packets[i]);
+		}
+	});
+}
+else{
+	// Connect to our datasource and start processing incoming data
+	var client = net.connect({host: host, port: port}, function(){
+		console.log('client connected');
+	});
 
-client.on('data', function(data){
-	// Sometimes we get multiple packets here -- need to split them
-	var packets = data.toString().trim().split("\n");
-	for (var i in packets){
-		decodePacket(packets[i]);
-	}
-});
+	client.on('data', function(data){
+		// Sometimes we get multiple packets here -- need to split them
+		var packets = data.toString().trim().split("\n");
+		for (var i in packets){
+			decodePacket(packets[i]);
+		}
+	});
 
-client.on('end', function(){
-	console.log('client disconnected');
-});
+	client.on('end', function(){
+		console.log('client disconnected');
+	});
+}
 
 // Takes a string and decodes it, testing validity
 // Returns a hash describing the packet
