@@ -275,10 +275,6 @@ function modesChecksum(bytes, num_bits){
 		// If bit is set, xor with corresponding table entry.
 		if (bytes[b] & bitmask){
 			crc ^= modes_checksum_table[j + offset];
-			//console.log('j: '+j+', offset: '+offset+', byte: '+b+', bit: '+bit+', bitmask: '+bitmask+', byte: '+bytes[b]+', bitset: true, xor: '+modes_checksum_table[j + offset]);
-		}
-		else{
-			//console.log('j: '+j+', offset: '+offset+', byte: '+b+', bit: '+bit+', bitmask: '+bitmask+', byte: '+bytes[b]+', bitset: false');
 		}
 	}
 
