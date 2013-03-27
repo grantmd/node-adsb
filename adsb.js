@@ -30,6 +30,8 @@ process.argv.forEach(function(val, index, array){
 // Constants
 var MODES_LONG_MSG_BITS = 112;
 var MODES_SHORT_MSG_BITS = 56;
+var MODES_UNIT_FEET = 0;
+var MODES_UNIT_METERS = 1;
 
 var stats = {
 	packets: 0,
@@ -220,6 +222,20 @@ function decodePacket(data){
 	msg.um = ((bytes[1] & 7) << 3) | bytes[2] >> 5;
 	console.log('Flight Status '+msg.fs+': '+flightStatusToString(msg.fs));
 
+	// Decode 13 bit altitude for DF0, DF4, DF16, DF20
+	// This is mostly in "short" messages, except DF20, which is "long" or "extended"
+	if (msg.type === 0 || msg.type == 4 || msg.type == 16 || msg.type == 20){
+		var ac13 = decodeAC13Field(bytes);
+		if (ac13){
+			msg.altitude = ac13.altitude;
+			msg.unit = ac13.unit;
+			console.log('AC13 Altitude: '+msg.altitude+', Units: '+((msg.unit == MODES_UNIT_FEET) ? 'ft' : 'm'));
+		}
+		else{
+			console.log('Could not decode AC13');
+		}
+	}
+
 	// Return our message hash
 	console.log('');
 	return msg;
@@ -402,4 +418,37 @@ function flightStatusToString(fs){
 		default:
 			return "Unknown flight status: "+fs;
 	}
+}
+
+// Decode the 13 bit AC altitude field (in DF 20 and others).
+// Returns the altitude, and unit as a hash.
+// Altitude is either MODES_UNIT_METERS or MDOES_UNIT_FEETS.
+function decodeAC13Field(bytes) {
+	var m_bit = bytes[3] & (1<<6);
+	var q_bit = bytes[3] & (1<<4);
+
+	if (!m_bit){
+		if (q_bit){
+			// N is the 11 bit integer resulting from the removal of bit Q and M
+			var n = ((bytes[2]&31)<<6) | ((bytes[3]&0x80)>>2) | ((bytes[3]&0x20)>>1) | (bytes[3]&15);
+
+			// The final altitude is due to the resulting number multiplied by 25, minus 1000.
+			return {
+				altitude: (n * 25)-1000,
+				unit: MODES_UNIT_FEET
+			};
+		}
+		else{
+			// TODO: Implement altitude where Q=0 and M=0
+		}
+	}
+	else{
+		// TODO: Implement altitude when meter unit is selected.
+		return {
+			altitude: undefined,
+			unit: MODES_UNIT_METERS
+		};
+	}
+
+	return 0;
 }
