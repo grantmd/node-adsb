@@ -238,6 +238,77 @@ function decodePacket(data){
 		}
 	}
 
+	// Decode extended squitter specific stuff for type "ADS-B message"
+	if (msg.msgtype == 17){
+		// Decode the extended squitter message.
+		if (msg.metype >= 1 && msg.metype <= 4){
+			// Aircraft Identification and Category
+			msg.aircraft_type = msg.metype-1;
+			msg.flight[0] = ais_charset[bytes[5]>>2];
+			msg.flight[1] = ais_charset[((bytes[5]&3)<<4)|(bytes[6]>>4)];
+			msg.flight[2] = ais_charset[((bytes[6]&15)<<2)|(bytes[7]>>6)];
+			msg.flight[3] = ais_charset[bytes[7]&63];
+			msg.flight[4] = ais_charset[bytes[8]>>2];
+			msg.flight[5] = ais_charset[((bytes[8]&3)<<4)|(bytes[9]>>4)];
+			msg.flight[6] = ais_charset[((bytes[9]&15)<<2)|(bytes[10]>>6)];
+			msg.flight[7] = ais_charset[bytes[10]&63];
+			msg.flight[8] = '\0';
+		}
+		else if (msg.metype >= 9 && msg.metype <= 18){
+			// Airborne Position (Baro Altitude)
+			msg.fflag = bytes[6] & (1<<2);
+			msg.tflag = bytes[6] & (1<<3);
+			var ac12 = decodeAC12Field(bytes);
+			if (ac12){
+				msg.altitude = ac12.altitude;
+				msg.unit = ac12.unit;
+				console.log('AC12 Altitude: '+msg.altitude+', Units: '+((msg.unit == MODES_UNIT_FEET) ? 'ft' : 'm'));
+			}
+			else{
+				console.log('Could not decode AC12');
+			}
+			msg.raw_latitude = ((bytes[6] & 3) << 15) | (bytes[7] << 7) | (bytes[8] >> 1);
+			msg.raw_longitude = ((bytes[8]&1) << 16) | (bytes[9] << 8) | bytes[10];
+		}
+		else if (msg.metype == 19 && msg.mesub >= 1 && msg.mesub <= 4){
+			// Airborne Velocity Message
+			if (msg.mesub == 1 || msg.mesub == 2){
+				msg.ew_dir = (bytes[5]&4) >> 2;
+				msg.ew_velocity = ((bytes[5]&3) << 8) | bytes[6];
+				msg.ns_dir = (bytes[7]&0x80) >> 7;
+				msg.ns_velocity = ((bytes[7]&0x7f) << 3) | ((bytes[8]&0xe0) >> 5);
+				msg.vert_rate_source = (bytes[8]&0x10) >> 4;
+				msg.vert_rate_sign = (bytes[8]&0x8) >> 5;
+				msg.vert_rate = ((bytes[8]&7) << 6) | ((bytes[9]&0xfc) >> 2);
+
+				// Compute velocity and angle from the two speed components.
+				msg.velocity = sqrt(msg.ns_velocity*msg.ns_velocity+msg.ew_velocity*msg.ew_velocity);
+				if (msg.velocity){
+					var ewv = msg.ew_velocity;
+					var nsv = msg.ns_velocity;
+					var heading;
+
+					if (msg.ew_dir) ewv *= -1;
+					if (msg.ns_dir) nsv *= -1;
+					heading = atan2(ewv,nsv);
+
+					// Convert to degrees.
+					msg.heading = heading * 360 / (M_PI*2);
+
+					// We don't want negative values but a 0-360 scale.
+					if (msg.heading < 0) msg.heading += 360;
+				}
+				else{
+					msg.heading = 0;
+				}
+			}
+			else if (msg.mesub == 3 || msg.mesub == 4){
+				msg.heading_is_valid = bytes[5] & (1<<2);
+				msg.heading = (360.0/128) * (((bytes[5] & 3) << 5) | (bytes[6] >> 3));
+			}
+		}
+	}
+
 	// Return our message hash
 	console.log('');
 	return msg;
@@ -368,7 +439,7 @@ function meTypeToString(metype, mesub){
 	else if (metype >= 9 && metype <= 18){
 		mename = "Airborne Position (Baro Altitude)";
 	}
-	else if (metype == 19 && mesub >=1 && mesub <= 4){
+	else if (metype == 19 && mesub >= 1 && mesub <= 4){
 		mename = "Airborne Velocity";
 	}
 	else if (metype >= 20 && metype <= 22){
@@ -423,8 +494,8 @@ function flightStatusToString(fs){
 }
 
 // Decode the 13 bit AC altitude field (in DF 20 and others).
-// Returns the altitude, and unit as a hash.
-// Altitude is either MODES_UNIT_METERS or MDOES_UNIT_FEETS.
+// Returns the altitude and unit as a hash.
+// Unit is either MODES_UNIT_METERS or MDOES_UNIT_FEETS.
 function decodeAC13Field(bytes) {
 	var m_bit = bytes[3] & (1<<6);
 	var q_bit = bytes[3] & (1<<4);
@@ -442,15 +513,32 @@ function decodeAC13Field(bytes) {
 		}
 		else{
 			// TODO: Implement altitude where Q=0 and M=0
+			return 0;
 		}
 	}
 	else{
 		// TODO: Implement altitude when meter unit is selected.
+		return 0;
+	}
+}
+
+// Decode the 12 bit AC altitude field (in DF 17 and others).
+// Returns the altitude and the unit as a hash
+function decodeAC12Field(bytes){
+	var q_bit = bytes[5] & 1;
+
+	if (q_bit) {
+		// N is the 11 bit integer resulting from the removal of bit Q
+		var n = ((bytes[5]>>1)<<4) | ((bytes[6]&0xF0) >> 4);
+
+		// The final altitude is due to the resulting number multiplied by 25, minus 1000.
 		return {
-			altitude: undefined,
-			unit: MODES_UNIT_METERS
+			altitude: (n * 25)-1000,
+			unit: MODES_UNIT_FEET
 		};
 	}
-
-	return 0;
+	else{
+		// TODO
+		return 0;
+	}
 }
