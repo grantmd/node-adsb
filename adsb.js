@@ -199,6 +199,8 @@ function decodePacket(data){
 	if (!msg.crc_ok){
 		stats.crc_errors++;
 		console.log('!!!!!!!!!!!!!!! CRC check failed: '+msg.crc+' vs '+crc2);
+
+		// TODO: Attempt to recover the message here
 	}
 
 	// Responder capabilities, always present
