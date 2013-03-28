@@ -4,7 +4,7 @@
   "description": "ADS-B decoder",
   "main": "adsb.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -13,5 +13,13 @@
   "author": "Myles Grant <myles@mylesgrant.com> (http://mylesgrant.com)",
   "license": "BSD",
   "readmeFilename": "README.md",
-  "gitHead": "0d2c3be500b5ee23310e9626cadec04bcda51a22"
+  "gitHead": "0d2c3be500b5ee23310e9626cadec04bcda51a22",
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [
+    "adsb",
+    "rtl",
+    "sdr"
+  ]
 }
