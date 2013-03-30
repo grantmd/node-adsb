@@ -2,7 +2,7 @@
   "name": "node-adsb",
   "version": "0.1.0",
   "description": "ADS-B decoder",
-  "main": "adsb.js",
+  "main": "./lib/adsb.js",
   "scripts": {
     "test": "mocha"
   },
@@ -23,6 +23,6 @@
     "sdr"
   ],
   "devDependencies": {
-    "mocha": "~1.8.2"
+    "mocha": "*"
   }
 }
