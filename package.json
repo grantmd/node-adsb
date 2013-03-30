@@ -23,6 +23,7 @@
     "sdr"
   ],
   "devDependencies": {
+    "should": "*",
     "mocha": "*"
   }
 }
