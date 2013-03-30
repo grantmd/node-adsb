@@ -1,6 +1,6 @@
 {
-  "name": "node-adsb",
-  "version": "0.1.0",
+  "name": "adsb",
+  "version": "0.2.0",
   "description": "ADS-B decoder",
   "main": "./lib/adsb.js",
   "scripts": {
@@ -8,7 +8,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/grantmd/node-adsb"
+    "url": "https://github.com/grantmd/node-adsb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/grantmd/node-adsb/issues",
+    "email": "myles@mylesgrant.com"
   },
   "author": "Myles Grant <myles@mylesgrant.com> (http://mylesgrant.com)",
   "license": "BSD",
