@@ -24,6 +24,12 @@ describe('packets', function(){
 			adsb.decodePacket('*280010248c796b;').should.include({bits: 56});
 			adsb.decodePacket('*5d4d20237a55a6;').should.include({bits: 56});
 		});
+
+		it('should have the correct responder capabilities', function(){
+			// Need more samples in the wild for the CAs
+			adsb.decodePacket('*5d4d20237a55a6;').should.include({ca: 5});
+			adsb.decodePacket('*5f4d20232daf00;').should.include({ca: 7});
+		});
 	});
 
 	describe('that are long', function(){
@@ -46,6 +52,12 @@ describe('packets', function(){
 			adsb.decodePacket('*8d4d202399108fabc87414b31cb8;').should.include({bits: 112});
 			adsb.decodePacket('*a0200eb02004d0f4cb18200ba365;').should.include({bits: 112});
 			adsb.decodePacket('*a8201024fa8103000000004da3bc;').should.include({bits: 112});
+		});
+
+		it('should have the correct responder capabilities', function(){
+			// Need more samples in the wild for the CAs
+			adsb.decodePacket('*8d4d2023991094ad487c14fc9e3d;').should.include({ca: 5});
+			adsb.decodePacket('*8f4d2023587f345e35837e2218b2;').should.include({ca: 7});
 		});
 	});
 });
