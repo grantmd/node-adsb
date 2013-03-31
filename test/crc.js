@@ -44,4 +44,19 @@ describe('packets', function(){
 			packet.should.include({crc: 0x2218b2});
 		});
 	});
+
+	describe('with bad crc that can be recovered', function(){
+		// These are all fixable packets, and should be moved into another test once we can make them pass the CRC check
+		it('should fail the crc check', function(){
+			adsb.decodePacket('*20000f1f684a6c;').should.include({crc_ok: false});
+			adsb.decodePacket('*280010248c796b;').should.include({crc_ok: false});
+
+			adsb.decodePacket('*00c18c367cbee4;').should.include({crc_ok: false});
+			adsb.decodePacket('*20000c37971428;').should.include({crc_ok: false});
+			adsb.decodePacket('*00c18c387ceaa5;').should.include({crc_ok: false});
+			adsb.decodePacket('*20000c3868b460;').should.include({crc_ok: false});
+
+			adsb.decodePacket('*a00007930000000000000068c268;').should.include({crc_ok: false});
+		});
+	});
 });
