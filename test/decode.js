@@ -47,6 +47,11 @@ describe('packets', function(){
 
 			adsb.decodePacket('*5da8fd5abb61ee;').should.include({icao: [0xa8, 0xfd, 0x5a]});
 		});
+
+		it('should have the correct extended squitter type and subtype', function(){
+			// As this is only for extended squitter messages, these values should be zero on all short messages
+			adsb.decodePacket('*5d4d20237a55a6;').should.include({metype: 0, mesub: 0});
+		});
 	});
 
 	describe('that are long', function(){
@@ -90,6 +95,18 @@ describe('packets', function(){
 			adsb.decodePacket('*8fa86e855817a4a338c396d4f13f;').should.include({icao: [0xa8, 0x6e, 0x85]});
 			adsb.decodePacket('*8fa86e859910fd87e0a0065eb299;').should.include({icao: [0xa8, 0x6e, 0x85]});
 			adsb.decodePacket('*8fa86e855819210de2163f721386;').should.include({icao: [0xa8, 0x6e, 0x85]});
+		});
+
+		it('should have the correct extended squitter type and subtype', function(){
+			// Not a whole lot of coverage on all the different possible values here
+			adsb.decodePacket('*8f4d20232004d0f4cb1820000d24;').should.include({metype: 4, mesub: 0});
+			adsb.decodePacket('*8d4d20232004d0f4cb1820b0efd4;').should.include({metype: 4, mesub: 0});
+
+			adsb.decodePacket('*8f4d2023587f345e35837e2218b2;').should.include({metype: 11, mesub: 0});
+			adsb.decodePacket('*8f4d20235877d0bc7d99551e27ca;').should.include({metype: 11, mesub: 0});
+
+			adsb.decodePacket('*8d4d2023991094ad487c14fc9e3d;').should.include({metype: 19, mesub: 1});
+			adsb.decodePacket('*8f4d2023991093acc87c1484b159;').should.include({metype: 19, mesub: 1});
 		});
 	});
 });
