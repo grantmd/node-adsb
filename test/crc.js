@@ -32,31 +32,31 @@ describe('packets', function(){
 	describe('with bad crc', function(){
 		it('should fail the crc check', function(){
 			var packet = adsb.decodePacket('*7f4d2023587f345e35837e2218b2;');
-			packet.should.include({crc_ok: false});
-			packet.should.include({crc: 0x587f34});
+			packet.should.containEql({crc_ok: false});
+			packet.should.containEql({crc: 0x587f34});
 		});
 	});
 
 	describe('with good crc', function(){
 		it('should pass the crc check', function(){
 			var packet = adsb.decodePacket('*8f4d2023587f345e35837e2218b2;');
-			packet.should.include({crc_ok: true});
-			packet.should.include({crc: 0x2218b2});
+			packet.should.containEql({crc_ok: true});
+			packet.should.containEql({crc: 0x2218b2});
 		});
 	});
 
 	describe('with bad crc that can be recovered', function(){
 		// These are all fixable packets, and should be moved into another test once we can make them pass the CRC check
 		it('should fail the crc check', function(){
-			adsb.decodePacket('*20000f1f684a6c;').should.include({crc_ok: false});
-			adsb.decodePacket('*280010248c796b;').should.include({crc_ok: false});
+			adsb.decodePacket('*20000f1f684a6c;').should.containEql({crc_ok: false});
+			adsb.decodePacket('*280010248c796b;').should.containEql({crc_ok: false});
 
-			adsb.decodePacket('*00c18c367cbee4;').should.include({crc_ok: false});
-			adsb.decodePacket('*20000c37971428;').should.include({crc_ok: false});
-			adsb.decodePacket('*00c18c387ceaa5;').should.include({crc_ok: false});
-			adsb.decodePacket('*20000c3868b460;').should.include({crc_ok: false});
+			adsb.decodePacket('*00c18c367cbee4;').should.containEql({crc_ok: false});
+			adsb.decodePacket('*20000c37971428;').should.containEql({crc_ok: false});
+			adsb.decodePacket('*00c18c387ceaa5;').should.containEql({crc_ok: false});
+			adsb.decodePacket('*20000c3868b460;').should.containEql({crc_ok: false});
 
-			adsb.decodePacket('*a00007930000000000000068c268;').should.include({crc_ok: false});
+			adsb.decodePacket('*a00007930000000000000068c268;').should.containEql({crc_ok: false});
 		});
 	});
 });
